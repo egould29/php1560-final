@@ -22,7 +22,7 @@ preprocess <- function(data) {
   
   # Drop unused columns and filter incomplete rows
   cleaned <- data %>%
-    select(-c(Date, StopLat, StopLng))
+    select(-c(StopLat, StopLng))
   cleaned <- cleaned[complete.cases(cleaned), ]
   
   return(cleaned)
