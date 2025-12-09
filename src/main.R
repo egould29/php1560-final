@@ -1,5 +1,5 @@
 # Main Pipeline
-# set you working directory to the php1560-final 
+# set your working directory to the php1560-final 
 library(tidyverse)
 library(readr)
 library(ggplot2)
@@ -19,11 +19,10 @@ bus_delays <- calculate_delays(bus_data)
 
 # Generate route delay summaries
 route_delays <- summarize_route_delay(bus_delays)
-worsening_rank <- rank_worsening_routes(bus_delays, top_n = 10)
 
 # Raw transitions for plotting
 transitions <- identify_driver_transitions(bus_data)
-transitions <- raw_transitions %>%
+transitions <- transitions %>%
   mutate(cross_route = Route != next_route)
 
 # Join everything
@@ -41,3 +40,9 @@ plot_trip_trajectory(bus_data_full, 95, 597) +
   plot_transition_propagation(bus_data_full) +
   plot_layout(ncol = 2) +
   plot_annotation(title = "RIPTA Delay Propagation: System-Level Summary")
+
+
+# Optional analysis
+# Detailed analysis for a specific trip
+trip_delta <- get_trip_delay(bus_data)
+top_worsening <- rank_worsening_routes(bus_delays, top_n = 10)
