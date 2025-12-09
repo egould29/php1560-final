@@ -66,3 +66,42 @@ calculate_delays <- function(data) {
     ) %>%
     ungroup()
 }
+
+
+#' Plot the Delay Trajectory for a Single Trip
+#'
+#' @description
+#' Creates a line-and-point visualization showing how a bus trip’s delay
+#' evolves across its sequence of stops. This plot highlights whether the trip
+#' tends to recover, maintain, or accumulate delay as it progresses.
+#'
+#' The function filters the dataset for a specific route and trip, orders the
+#' stops by their sequence, and plots \code{Delay.Sec} against
+#' \code{Stop.Sequence}. A dashed horizontal line at zero delay provides a
+#' visual reference for on-time performance.
+#'
+#' @param delay_data A data frame containing stop-level RIPTA on-time
+#' performance data. Must include the columns:
+#' \code{Route}, \code{Trip}, \code{Stop.Sequence}, and \code{Delay.Sec}.
+#'
+#' @param route_id A numeric or character route identifier used to filter the
+#' data to a single route.
+#'
+#' @param trip_id A numeric or character trip identifier specifying which trip
+#' to visualize.
+plot_trip_trajectory <- function(delay_data, route_id, trip_id) {
+  trip_data <- delay_data %>%
+    filter(Route == route_id, Trip == trip_id)
+  
+  ggplot(trip_data, aes(x = Stop.Sequence, y = Delay.Sec)) +
+    geom_line(size = 1.2, color = "#0072B2") +
+    geom_point(size = 2) +
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    scale_x_continuous(breaks = trip_data$Stop.Sequence) +  # show all stops
+    labs(
+      title = paste("Delay Trajectory for Route", route_id, "Trip", trip_id),
+      x = "Stop Sequence",
+      y = "Delay (sec)"
+    ) +
+    theme_minimal(base_size = 14)
+}

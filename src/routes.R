@@ -70,16 +70,62 @@ plot_route_delay_distribution <- function(delay_data, route_id) {
   if (nrow(route_subset) == 0) {
     stop(paste("No data found for route:", route_id))
   }
-  
+
   ggplot(route_subset, aes(x = Delta.Delay)) +
-    geom_histogram(aes(y = after_stat(count/sum(count))), bins = 40) +
+    geom_histogram(aes(y = after_stat(count/sum(count))),
+                   bins = 40, fill = "#009E73", color = "white") +
     labs(
-      title = paste("Delay Change Distribution for Route", route_id),
-      x = "Change in Delay Between Stops (sec)",
+      title = paste("Distribution of Stop-to-Stop Delay Changes:", route_id),
+      x = "Δ Delay (sec)",
       y = "Proportion"
     ) +
+    theme_minimal(base_size = 14)
+}
+
+
+#' Plot Average Change in Delay by Route
+#'
+#' @description
+#' This function produces a horizontal bar plot showing the average stop-to-stop
+#' change in delay (\code{avg_delta_delay}) for each route. Bars are colored
+#' based on whether the average delay is positive (worsening) or non-positive
+#' (recovering/stable). Routes are ordered from lowest to highest average
+#' change in delay for easy comparison.
+#'
+#' @param route_summary A data frame containing route-level summaries.
+#'   Must include at least the following columns:
+#'   \itemize{
+#'     \item \code{Route} — route identifier.
+#'     \item \code{avg_delta_delay} — average change in delay between stops.
+#'   }
+#'
+#' @return
+#' A \code{ggplot} object representing the route-level delay summary.
+plot_route_reliability <- function(route_summary) {
+  route_summary <- route_summary %>%
+    group_by(Route) %>%
+    summarise(
+      avg_delta_delay = mean(avg_delta_delay, na.rm = TRUE)
+    ) %>%
+    ungroup()
+  
+  route_summary <- route_summary %>%
+    arrange(avg_delta_delay) %>%
+    mutate(Route = factor(Route, levels = Route))
+  
+  ggplot(route_summary, aes(x = Route, y = avg_delta_delay,
+                            fill = avg_delta_delay > 0)) +
+    geom_col() +
+    scale_fill_manual(values = c("#009E73", "#D55E00"),
+                      labels = c("Recovering / Stable", "Worsening")) +
+    labs(title = "Average ΔDelay by Route", 
+         x = "Route", 
+         y = "Average Change in Delay Between Stops (sec)", 
+         fill = "Pattern" ) +
+    coord_flip()+
     theme_minimal()
 }
+
 
 
 #' @title Compare Delay Profiles Between Routes

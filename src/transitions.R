@@ -57,33 +57,6 @@ identify_driver_transitions <- function(data) {
 }
 
 
-#' @title Summarize transition effects on delays
-#'
-#' @description Aggregates transition-level data to study whether
-#' late arrivals tend to lead to worse initial delays in the next trip.
-#' Can be used for system-level reporting.
-#'
-#' @param transitions Data frame from identify_driver_transitions().
-#'
-#' @return A summary data frame.
-summarize_transition_effects <- function(transitions) {
-  transitions %>%
-    mutate(
-      cross_route = Route != next_route,
-      propagated_delay = next_initial_delay - 0 
-    ) %>%
-    group_by(cross_route) %>%
-    summarise(
-      avg_gap_min = mean(transition_gap_min, na.rm = TRUE),
-      avg_prev_final_delay = mean(final_delay, na.rm = TRUE),
-      avg_next_initial_delay = mean(next_initial_delay, na.rm = TRUE),
-      correlation = cor(final_delay, next_initial_delay, use = "complete.obs"),
-      n = n(),
-      .groups = "drop"
-    )
-}
-
-
 #' @title Visualize delay propagation through driver transitions
 #'
 #' @description Produces a scatter plot showing how final delays of one trip
@@ -97,14 +70,16 @@ plot_transition_propagation <- function(transitions) {
   ggplot(transitions,
          aes(x = final_delay,
              y = next_initial_delay,
-             color = Route != next_route)) +
-    geom_point(alpha = 0.4) +
-    geom_smooth(method = "lm", se = FALSE) +
+             color = cross_route)) +
+    geom_point(alpha = 0.4, size = 2) +
+    geom_smooth(method = "lm", se = FALSE, size = 1.2) +
+    scale_color_manual(values = c("#0072B2", "#D55E00"),
+                       labels = c("Same Route", "Different Route")) +
     labs(
-      title = "Propagation of Delays Through Driver Transitions",
+      title = "Delay Propagation Across Driver Transitions",
       x = "Final Delay of Trip A (sec)",
       y = "Initial Delay of Trip B (sec)",
-      color = "Cross-Route Transition"
+      color = "Transition Type"
     ) +
-    theme_minimal()
+    theme_minimal(base_size = 14)
 }
