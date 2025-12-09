@@ -6,9 +6,11 @@ library(dplyr)
 #' 
 #' @param data A data frame containing the bus data.
 #' @param trip_num The trip ID number.
+#' @param trip_date The date of the trip.
 #' 
-#' @return A data frame containing every row with the given trip number.
-get_trip <- function(data, trip_num) {
+#' @return A data frame containing every row with the given trip number and
+#' date.
+get_trip <- function(data, trip_num, trip_date) {
   # Check the input
   if (!is.data.frame(data) | !is.numeric(trip_num)) {
     stop("Argument(s) of incorrect type.")
@@ -18,7 +20,10 @@ get_trip <- function(data, trip_num) {
     stop("Could not find trip.")
   }
   
-  return(filter(data, Trip == trip_num))
+  trip <- data %>%
+    filter(Trip == trip_num, Date == trip_date)
+  
+  return(trip)
 }
 
 #' @description Helper function that returns all of the rows pertaining to a
