@@ -108,4 +108,3 @@ plot_transition_propagation <- function(transitions) {
     ) +
     theme_minimal()
 }
-
