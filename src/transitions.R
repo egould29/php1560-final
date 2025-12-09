@@ -66,5 +66,46 @@ identify_driver_transitions <- function(data) {
 #' @param transitions Data frame from identify_driver_transitions().
 #'
 #' @return A summary data frame.
+summarize_transition_effects <- function(transitions) {
+  transitions %>%
+    mutate(
+      cross_route = Route != next_route,
+      propagated_delay = next_initial_delay - 0 
+    ) %>%
+    group_by(cross_route) %>%
+    summarise(
+      avg_gap_min = mean(transition_gap_min, na.rm = TRUE),
+      avg_prev_final_delay = mean(final_delay, na.rm = TRUE),
+      avg_next_initial_delay = mean(next_initial_delay, na.rm = TRUE),
+      correlation = cor(final_delay, next_initial_delay, use = "complete.obs"),
+      n = n(),
+      .groups = "drop"
+    )
+}
 
+
+#' @title Visualize delay propagation through driver transitions
+#'
+#' @description Produces a scatter plot showing how final delays of one trip
+#' relate to initial delays of the following trip, highlighting whether
+#' propagation is stronger in cross-route transitions.
+#'
+#' @param transitions Output of identify_driver_transitions().
+#'
+#' @return A ggplot object.
+plot_transition_propagation <- function(transitions) {
+  ggplot(transitions,
+         aes(x = final_delay,
+             y = next_initial_delay,
+             color = Route != next_route)) +
+    geom_point(alpha = 0.4) +
+    geom_smooth(method = "lm", se = FALSE) +
+    labs(
+      title = "Propagation of Delays Through Driver Transitions",
+      x = "Final Delay of Trip A (sec)",
+      y = "Initial Delay of Trip B (sec)",
+      color = "Cross-Route Transition"
+    ) +
+    theme_minimal()
+}
 
