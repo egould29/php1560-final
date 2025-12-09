@@ -66,15 +66,17 @@ rank_worsening_routes <- function(delay_data, top_n = 10) {
 #' @return A ggplot object.
 plot_route_delay_distribution <- function(delay_data, route_id) {
   route_subset <- delay_data %>% filter(Route == route_id)
+  
   if (nrow(route_subset) == 0) {
     stop(paste("No data found for route:", route_id))
   }
+  
   ggplot(route_subset, aes(x = Delta.Delay)) +
-    geom_histogram(bins = 40) +
+    geom_histogram(aes(y = after_stat(count/sum(count))), bins = 40) +
     labs(
       title = paste("Delay Change Distribution for Route", route_id),
       x = "Change in Delay Between Stops (sec)",
-      y = "Frequency"
+      y = "Proportion"
     ) +
     theme_minimal()
 }
